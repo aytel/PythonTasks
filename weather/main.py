@@ -8,69 +8,35 @@ import sys
 import json
 import argparse
 import configparser
+from urllib.error import HTTPError
 from urllib.request import urlopen
 from urllib.parse import urlencode
-from urllib.error import HTTPError
+from utils import levenstein, LazyLoader
 
 
-def load_cities():
-    global CITIES
-    with open(CITIES_LIST_PATH, "r", encoding="utf8") as file:
-        CITIES = json.load(file)
-        file.close()
-
-
-def levenstein(str1, str2):
-    """
-    :return Levenstein distance between str1 and str2.
-    """
-
-    n, m = len(str1), len(str2)
-    dp = [[0 for _ in range(m + 1)] for _ in range(n + 1)]
-
-    for i in range(n + 1):
-        dp[i][0] = i
-    for j in range(m + 1):
-        dp[0][j] = j
-
-    for i in range(1, n + 1):
-        for j in range(1, m + 1):
-            dp[i][j] = min(
-                dp[i][j - 1] + 1,
-                dp[i - 1][j] + 1,
-                dp[i - 1][j - 1] + (str1[i - 1] != str2[j - 1])
-            )
-
-    return dp[n][m]
-
-
-def get_json(mode, city):
+def get_json(city, mode='q'):
     """
         :param mode - 0 if we search by id and 1 if by city
         :param city - string with id or city name
         :return json info about city
     """
 
-    mode = 'q' if mode == 1 else 'id'
-    params = urlencode({mode: str(city), 'units': 'metric', 'appid': API_KEY})
-
     try:
-        params = urlencode({mode: str(city), 'units': 'metric', 'appid': API_KEY})
+        params = urlencode({mode: city, 'units': 'metric', 'appid': API_KEY})
         response = urlopen(WEATHER_URL.format(params))
     except HTTPError:
         if mode == 'id':
             print('Unknown id, try again')
             sys.exit(0)
         else:
-            load_cities()
-            cur, min_dist = None, 10 ** 9
-            for candname in (map(lambda x: x["name"], CITIES)):
+            cur, min_dist = None, float('inf')
+            for candname in map(lambda x: x["name"], CITIES.content):
                 val = levenstein(city.lower(), candname.lower())
                 if val < min_dist:
                     cur, min_dist = candname, val
             print(f'Unknown city, best match is {cur}, printing result for it')
 
-            params = urlencode({mode: str(cur), 'units': 'metric', 'appid': API_KEY})
+            params = urlencode({mode: cur, 'units': 'metric', 'appid': API_KEY})
             response = urlopen(WEATHER_URL.format(params))
 
     data = response.read().decode('ascii')
@@ -94,10 +60,15 @@ def printweather(data):
     print(f"Cloudiness is {clouds}%")
 
 
-if __name__ == '__main__':
+def init_arg_parser():
     arg_parser = argparse.ArgumentParser()
     arg_parser.add_argument('--city', action='store', dest='city', help='City name')
     arg_parser.add_argument('--id', action='store', dest='id', help='City id')
+    return arg_parser
+
+
+if __name__ == '__main__':
+    arg_parser = init_arg_parser()
 
     args = arg_parser.parse_args()
 
@@ -110,9 +81,10 @@ if __name__ == '__main__':
     API_KEY = config['DEFAULT']['API_KEY']
     WEATHER_URL = config['DEFAULT']['WEATHER_URL']
     CITIES_LIST_PATH = config['DEFAULT']['CITIES_LIST_PATH']
+    CITIES = LazyLoader(CITIES_LIST_PATH)
 
     if args.city is not None:
-        data = get_json(1, args.city)
+        data = get_json(args.city)
     else:
-        data = get_json(0, args.id)
+        data = get_json(args.id, mode='id')
     printweather(data)
