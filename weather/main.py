@@ -5,9 +5,9 @@ If you want to get weather by city, launch this file with arguments 'city <cityn
 """
 
 import sys
-import urllib.request
+from urllib.request import urlopen
 import json
-import urllib.error
+from urllib.error import  HTTPError
 import argparse
 import configparser
 
@@ -46,10 +46,10 @@ def get_json(mode, city):
     mode = 'q' if mode == 1 else 'id'
     response = None
     try:
-        response = urllib.request.urlopen(
+        response = urlopen(
             WEATHER_URL.format(mode, city, API_KEY)
         )
-    except urllib.error.HTTPError:
+    except HTTPError:
         if mode == 'id':
             print('unknown id, try again')
         else:
@@ -64,7 +64,7 @@ def get_json(mode, city):
 
             city = cur
 
-            response = urllib.request.urlopen(
+            response = urlopen(
                 WEATHER_URL.format(mode, city, API_KEY)
             )
 
