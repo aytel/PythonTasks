@@ -1,12 +1,13 @@
 import json
+from dataclasses import dataclass
 
 
+@dataclass
 class WeatherStore:
-    def __init__(self, country, city, temp, clouds):
-        self.country = country
-        self.city = city
-        self.temp = temp
-        self.clouds = clouds
+    country: str
+    city: str
+    temp: float
+    clouds: int
 
     @staticmethod
     def get_from_json(content):
