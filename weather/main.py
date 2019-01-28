@@ -9,8 +9,7 @@ import urllib.request
 import json
 import urllib.error
 import argparse
-
-API_KEY = 'be01cef635cf71b292eee67044cb51e3'
+import configparser
 
 
 def levenstein(str1, str2):
@@ -48,15 +47,13 @@ def get_json(mode, city):
     response = None
     try:
         response = urllib.request.urlopen(
-            "https://api.openweathermap.org/data/2.5/weather?{}={}"
-            "&units=metric"
-            "&appid={}".format(mode, city, API_KEY)
+            WEATHER_URL.format(mode, city, API_KEY)
         )
     except urllib.error.HTTPError:
         if mode == 'id':
             print('unknown id, try again')
         else:
-            CITIES = json.load(open("./data/city.list.min.json", "r", encoding="utf8"))
+            CITIES = json.load(open(CITIES_LIST_PATH, "r", encoding="utf8"))
             cur, mn = None, 10**9
             for cand in CITIES:
                 candname = cand["name"]
@@ -68,9 +65,7 @@ def get_json(mode, city):
             city = cur
 
             response = urllib.request.urlopen(
-                "https://api.openweathermap.org/data/2.5/weather?{}={}"
-                "&units=metric"
-                "&appid={}".format(mode, city, API_KEY)
+                WEATHER_URL.format(mode, city, API_KEY)
             )
 
 
@@ -105,6 +100,12 @@ if __name__ == '__main__':
     if args.city is None and args.id is None:
         print('Unknown mode, try again')
         sys.exit(0)
+
+    config = configparser.ConfigParser()
+    config.read('settings.ini')
+    API_KEY = config['DEFAULT']['API_KEY']
+    WEATHER_URL = config['DEFAULT']['WEATHER_URL']
+    CITIES_LIST_PATH = config['DEFAULT']['CITIES_LIST_PATH']
 
     if args.city is not None:
         data = get_json(1, args.city)
