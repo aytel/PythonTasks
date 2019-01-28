@@ -25,7 +25,6 @@ def get_json(city, mode=False):
 
     if not isinstance(mode, bool):
         raise ValueError('Mode must be bool, programmer is mudak, sry')
-        sys.exit(0)
 
     if not mode:
         mode = 'q'
