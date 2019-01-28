@@ -5,12 +5,12 @@ If you want to get weather by city, launch this file with arguments 'city <cityn
 """
 
 import sys
-from urllib.request import urlopen
-from urllib.parse import urlencode
 import json
-from urllib.error import HTTPError
 import argparse
 import configparser
+from urllib.request import urlopen
+from urllib.parse import urlencode
+from urllib.error import HTTPError
 
 
 def load_cities():
