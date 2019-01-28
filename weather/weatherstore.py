@@ -11,9 +11,9 @@ class WeatherStore:
     @staticmethod
     def get_from_json(content):
         encoded = json.loads(content)
-        main = encoded["main"]
-        temp = main["temp"]
-        clouds = encoded["clouds"]["all"]
+        main = encoded['main']
+        temp = main['temp']
+        clouds = encoded['clouds']['all']
         country = encoded['sys']['country']
         city = encoded['name']
 
