@@ -54,20 +54,19 @@ def get_json(mode, city):
             print('unknown id, try again')
         else:
             CITIES = json.load(open(CITIES_LIST_PATH, "r", encoding="utf8"))
-            cur, mn = None, 10**9
+            cur, mn = None, 10 ** 9
             for cand in CITIES:
                 candname = cand["name"]
                 val = levenstein(city.lower(), candname.lower())
                 if val < mn:
                     cur, mn = candname, val
-            print('unknown city, best match is {}, printing result for it'.format(cur))
+            print(f'unknown city, best match is {cur}, printing result for it')
 
             city = cur
 
             response = urllib.request.urlopen(
                 WEATHER_URL.format(mode, city, API_KEY)
             )
-
 
     data = response.read().decode('ascii')
     return data
@@ -84,10 +83,10 @@ def printweather(data):
     main = dataenc["main"]
     temp = main["temp"]
     clouds = dataenc["clouds"]["all"]
-    print("County is {}".format(dataenc["sys"]["country"]))
-    print("City is {}".format(dataenc["name"]))
-    print("Temperature is {}°C".format(temp))
-    print("Cloudiness is {}%".format(clouds))
+    print(f"County is {dataenc['sys']['country']}")
+    print(f"City is {dataenc['name']}")
+    print(f"Temperature is {temp}°C")
+    print(f"Cloudiness is {clouds}%")
 
 
 if __name__ == '__main__':
