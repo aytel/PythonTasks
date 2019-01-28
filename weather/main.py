@@ -11,15 +11,26 @@ import configparser
 from urllib.error import HTTPError
 from urllib.request import urlopen
 from urllib.parse import urlencode
-from utils import levenstein, LazyLoader
+from utils import levenstein
+from lazyloader import LazyLoader
+from weatherstore import WeatherStore
 
 
-def get_json(city, mode='q'):
+def get_json(city, mode=False):
     """
         :param mode - 0 if we search by id and 1 if by city
         :param city - string with id or city name
         :return json info about city
     """
+
+    if not isinstance(mode, bool):
+        raise ValueError('Mode must be bool, programmer is mudak, sry')
+        sys.exit(0)
+
+    if not mode:
+        mode = 'q'
+    else:
+        mode = 'id'
 
     try:
         params = urlencode({mode: city, 'units': 'metric', 'appid': API_KEY})
@@ -41,23 +52,6 @@ def get_json(city, mode='q'):
 
     data = response.read().decode('ascii')
     return data
-
-
-def printweather(data):
-    """
-    Prints temperature and cloudiness of given city.
-
-    :param data - json string with info
-    """
-    dataenc = json.loads(data)
-
-    main = dataenc["main"]
-    temp = main["temp"]
-    clouds = dataenc["clouds"]["all"]
-    print(f"County is {dataenc['sys']['country']}")
-    print(f"City is {dataenc['name']}")
-    print(f"Temperature is {temp}°C")
-    print(f"Cloudiness is {clouds}%")
 
 
 def init_arg_parser():
@@ -86,5 +80,8 @@ if __name__ == '__main__':
     if args.city is not None:
         data = get_json(args.city)
     else:
-        data = get_json(args.id, mode='id')
-    printweather(data)
+        data = get_json(args.id, mode=True)
+
+    weather_store = WeatherStore.get_from_json(data)
+
+    print(weather_store)
