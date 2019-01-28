@@ -8,6 +8,7 @@ import sys
 import urllib.request
 import json
 import urllib.error
+import argparse
 
 API_KEY = 'be01cef635cf71b292eee67044cb51e3'
 
@@ -36,7 +37,7 @@ def levenstein(str1, str2):
     return dp[n][m]
 
 
-def getjson(mode, city):
+def get_json(mode, city):
     """
         :param mode - 0 if we search by id and 1 if by city
         :param city - string with id or city name
@@ -95,13 +96,18 @@ def printweather(data):
 
 
 if __name__ == '__main__':
-    if sys.argv[1] == 'id':
-        cityid = sys.argv[2]
-        data = getjson(0, cityid)
-    elif sys.argv[1] == 'city':
-        city = ' '.join(sys.argv[2:])
-        data = getjson(1, city)
+    arg_parser = argparse.ArgumentParser()
+    arg_parser.add_argument('--city', action='store', dest='city', help='City name')
+    arg_parser.add_argument('--id', action='store', dest='id', help='City id')
+
+    args = arg_parser.parse_args()
+
+    if args.city is None and args.id is None:
+        print('Unknown mode, try again')
+        sys.exit(0)
+
+    if args.city is not None:
+        data = get_json(1, args.city)
     else:
-        print('unknown mode')
-        exit(0)
+        data = get_json(0, args.id)
     printweather(data)
