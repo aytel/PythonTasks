@@ -58,7 +58,7 @@ def get_json(mode, city):
             for cand in CITIES:
                 candname = cand["name"]
                 val = levenstein(city.lower(), candname.lower())
-                if (val < mn):
+                if val < mn:
                     cur, mn = candname, val
             print('unknown city, best match is {}, printing result for it'.format(cur))
 
