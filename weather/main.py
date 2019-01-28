@@ -6,10 +6,18 @@ If you want to get weather by city, launch this file with arguments 'city <cityn
 
 import sys
 from urllib.request import urlopen
+from urllib.parse import urlencode
 import json
-from urllib.error import  HTTPError
+from urllib.error import HTTPError
 import argparse
 import configparser
+
+
+def load_cities():
+    global CITIES
+    with open(CITIES_LIST_PATH, "r", encoding="utf8") as file:
+        CITIES = json.load(file)
+        file.close()
 
 
 def levenstein(str1, str2):
@@ -44,29 +52,26 @@ def get_json(mode, city):
     """
 
     mode = 'q' if mode == 1 else 'id'
-    response = None
+    params = urlencode({mode: str(city), 'units': 'metric', 'appid': API_KEY})
+
     try:
-        response = urlopen(
-            WEATHER_URL.format(mode, city, API_KEY)
-        )
+        params = urlencode({mode: str(city), 'units': 'metric', 'appid': API_KEY})
+        response = urlopen(WEATHER_URL.format(params))
     except HTTPError:
         if mode == 'id':
-            print('unknown id, try again')
+            print('Unknown id, try again')
+            sys.exit(0)
         else:
-            CITIES = json.load(open(CITIES_LIST_PATH, "r", encoding="utf8"))
-            cur, mn = None, 10 ** 9
-            for cand in CITIES:
-                candname = cand["name"]
+            load_cities()
+            cur, min_dist = None, 10 ** 9
+            for candname in (map(lambda x: x["name"], CITIES)):
                 val = levenstein(city.lower(), candname.lower())
-                if val < mn:
-                    cur, mn = candname, val
-            print(f'unknown city, best match is {cur}, printing result for it')
+                if val < min_dist:
+                    cur, min_dist = candname, val
+            print(f'Unknown city, best match is {cur}, printing result for it')
 
-            city = cur
-
-            response = urlopen(
-                WEATHER_URL.format(mode, city, API_KEY)
-            )
+            params = urlencode({mode: str(cur), 'units': 'metric', 'appid': API_KEY})
+            response = urlopen(WEATHER_URL.format(params))
 
     data = response.read().decode('ascii')
     return data
