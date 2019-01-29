@@ -10,7 +10,8 @@ import configparser
 
 from lazyloader import LazyLoader
 from weatherstore import WeatherStore
-from jsongetter import JSONGetter
+from weathergetter import WeatherGetter
+from citygetter import CityGetter
 
 
 def init_arg_parser():
@@ -25,27 +26,33 @@ if __name__ == '__main__':
 
     args = arg_parser.parse_args()
 
-    if args.city is None and args.id is None:
-        print('Unknown mode, try again')
-        sys.exit(0)
-
     config = configparser.ConfigParser()
     config.read('settings.ini')
     API_KEY = config['DEFAULT']['API_KEY']
     WEATHER_URL = config['DEFAULT']['WEATHER_URL']
     CITIES_LIST_PATH = config['DEFAULT']['CITIES_LIST_PATH']
     CITIES = LazyLoader(CITIES_LIST_PATH)
+    CITY_URL = config['DEFAULT']['CITY_URL']
 
-    json_getter = JSONGetter(API_KEY, WEATHER_URL, CITIES)
+    if args.city is None and args.id is None:
+        city_getter = CityGetter(CITY_URL)
+        city_response = city_getter.get()
+        if city_response.content is not None:
+            args.city = city_response.content
+        else:
+            args.city = 'Yekaterinburg'
+            print(f'Can\'t detect your city, hope you\'re from {args.city}')
+
+    weather_getter = WeatherGetter(API_KEY, WEATHER_URL, CITIES)
 
     if args.city is not None:
-        response = json_getter.get(args.city)
+        response = weather_getter.get(args.city)
     else:
-        response = json_getter.get(args.id, search_by_id=True)
+        response = weather_getter.get(args.id, search_by_id=True)
 
     if response.content is not None:
-        if response.new_city is not None:
-            print(f'Unknown city, best match is {response.new_city}, printing result for it')
+        if response.additional is not None:
+            print(response.additional)
         weather_store = WeatherStore.get_from_json(response.content)
         print(weather_store)
     else:
