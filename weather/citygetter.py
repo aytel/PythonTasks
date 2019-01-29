@@ -1,5 +1,6 @@
 from jsongetter import JSONGetter
 
+
 class CityGetter:
     def __init__(self, city_url):
         self._getter = JSONGetter(city_url, {})

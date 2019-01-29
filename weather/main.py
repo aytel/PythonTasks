@@ -4,7 +4,6 @@ If you want to get weather by id, launch this file with arguments 'id <id>'.
 If you want to get weather by city, launch this file with arguments 'city <cityname with spaces>'.
 """
 
-import sys
 import argparse
 import configparser
 
