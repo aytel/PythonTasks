@@ -7,52 +7,11 @@ If you want to get weather by city, launch this file with arguments 'city <cityn
 import sys
 import argparse
 import configparser
-from urllib.error import HTTPError
-from urllib.request import urlopen
-from urllib.parse import urlencode
-from utils import levenstein
 
 from lazyloader import LazyLoader
 from weatherstore import WeatherStore
 from jsongetter import JSONGetter
 
-
-"""def get_json(city, mode=False):
-    \"""
-        :param mode - 0 if we search by id and 1 if by city
-        :param city - string with id or city name
-        :return json info about city
-    \"""
-
-    if not isinstance(mode, bool):
-        raise ValueError('Mode must be bool, programmer is mudak, sry')
-
-    if not mode:
-        mode = 'q'
-    else:
-        mode = 'id'
-
-    try:
-        params = urlencode({mode: city, 'units': 'metric', 'appid': API_KEY})
-        response = urlopen(WEATHER_URL.format(params))
-    except HTTPError:
-        if mode == 'id':
-            print('Unknown id, try again')
-            sys.exit(0)
-        else:
-            cur, min_dist = None, float('inf')
-            for candname in map(lambda x: x["name"], CITIES.content):
-                val = levenstein(city.lower(), candname.lower())
-                if val < min_dist:
-                    cur, min_dist = candname, val
-            print(f'Unknown city, best match is {cur}, printing result for it')
-
-            params = urlencode({mode: cur, 'units': 'metric', 'appid': API_KEY})
-            response = urlopen(WEATHER_URL.format(params))
-
-    data = response.read().decode('ascii')
-    return data
-"""
 
 def init_arg_parser():
     arg_parser = argparse.ArgumentParser()
