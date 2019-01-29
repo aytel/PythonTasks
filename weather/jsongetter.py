@@ -8,11 +8,11 @@ from jsonresponse import JSONResponse
 
 
 class JSONGetter:
-    def __init__(self, url, params):
+    def __init__(self, url, params={}):
         self._params = params
         self._url = url
 
-    def get(self, additional_params, tout=5, attempts=5):
+    def get(self, additional_params={}, tout=5, attempts=5):
         cur_params = {**additional_params, **self._params}
         url = self._url.format(urlencode(cur_params))
 
