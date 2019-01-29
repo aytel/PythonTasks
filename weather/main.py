@@ -5,23 +5,24 @@ If you want to get weather by city, launch this file with arguments 'city <cityn
 """
 
 import sys
-import json
 import argparse
 import configparser
 from urllib.error import HTTPError
 from urllib.request import urlopen
 from urllib.parse import urlencode
 from utils import levenstein
+
 from lazyloader import LazyLoader
 from weatherstore import WeatherStore
+from jsongetter import JSONGetter
 
 
-def get_json(city, mode=False):
-    """
+"""def get_json(city, mode=False):
+    \"""
         :param mode - 0 if we search by id and 1 if by city
         :param city - string with id or city name
         :return json info about city
-    """
+    \"""
 
     if not isinstance(mode, bool):
         raise ValueError('Mode must be bool, programmer is mudak, sry')
@@ -51,7 +52,7 @@ def get_json(city, mode=False):
 
     data = response.read().decode('ascii')
     return data
-
+"""
 
 def init_arg_parser():
     arg_parser = argparse.ArgumentParser()
@@ -76,11 +77,17 @@ if __name__ == '__main__':
     CITIES_LIST_PATH = config['DEFAULT']['CITIES_LIST_PATH']
     CITIES = LazyLoader(CITIES_LIST_PATH)
 
+    json_getter = JSONGetter(API_KEY, WEATHER_URL, CITIES)
+
     if args.city is not None:
-        data = get_json(args.city)
+        response = json_getter.get(args.city)
     else:
-        data = get_json(args.id, mode=True)
+        response = json_getter.get(args.id, search_by_id=True)
 
-    weather_store = WeatherStore.get_from_json(data)
-
-    print(weather_store)
+    if response.content is not None:
+        if response.new_city is not None:
+            print(f'Unknown city, best match is {response.new_city}, printing result for it')
+        weather_store = WeatherStore.get_from_json(response.content)
+        print(weather_store)
+    else:
+        print(response.error)
