@@ -1,1 +1,1 @@
-web: python weather\main.py --bot
+web: cd weather && python main.py --bot
