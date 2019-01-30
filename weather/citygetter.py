@@ -1,9 +1,9 @@
-from jsongetter import JSONGetter
+from jsonhandler import JSONHandler
 
 
 class CityGetter:
     def __init__(self, city_url):
-        self._getter = JSONGetter(city_url, {})
+        self._getter = JSONHandler(city_url)
         self._CITY_URL = city_url
 
     def get(self):

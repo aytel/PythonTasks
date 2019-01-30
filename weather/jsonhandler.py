@@ -7,18 +7,16 @@ from socket import timeout
 from jsonresponse import JSONResponse
 
 
-class JSONGetter:
-    def __init__(self, url, params):
-        self._params = params
+class JSONHandler:
+    def __init__(self, url):
         self._url = url
 
-    def get(self, additional_params, tout=5, attempts=5):
-        cur_params = {**additional_params, **self._params}
-        url = self._url.format(urlencode(cur_params))
+    def get(self, params, tout=5, attempts=5, data=None):
+        url = self._url.format(urlencode(params))
 
         for attempt in range(attempts):
             try:
-                response = urlopen(url, timeout=tout)
+                response = urlopen(url, timeout=tout, data=data)
             except HTTPError as e:
                 if attempt == attempts - 1:
                     return JSONResponse(e.getcode(), None, e)
@@ -32,3 +30,6 @@ class JSONGetter:
                     return JSONResponse(None, None, e)
                 else:
                     return JSONResponse(response.getcode(), content, None)
+
+    def send(self, params, data: dict, tout=5, attempts=5):
+        return self.get(params, tout, attempts, urlencode(data).encode('utf-8'))
