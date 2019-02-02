@@ -1,0 +1,1 @@
+web: cd weather && python main.py --bot
